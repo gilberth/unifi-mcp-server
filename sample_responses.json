@@ -1,0 +1,43 @@
+{
+  "list_hosts": {
+    "data": [
+      {
+        "id": "host_123",
+        "name": "Oficina Principal",
+        "status": "online",
+        "lastSeen": "2024-01-15T10:30:00Z",
+        "deviceCount": 15,
+        "siteId": "site_456"
+      }
+    ],
+    "meta": {
+      "total": 1,
+      "nextToken": null
+    }
+  },
+  "get_device_health_summary": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "total_devices": 25,
+    "online_devices": 23,
+    "offline_devices": 2,
+    "health_percentage": 92.0,
+    "device_types": {
+      "gateway": {
+        "total": 2,
+        "online": 2,
+        "offline": 0
+      },
+      "switch": {
+        "total": 8,
+        "online": 7,
+        "offline": 1
+      },
+      "ap": {
+        "total": 15,
+        "online": 14,
+        "offline": 1
+      }
+    }
+  },
+  "network_health_report": "\n# Reporte de Salud de Red UniFi\n**Generado:** 2024-01-15 10:30:00 UTC\n**Sitio:** Oficina Principal\n\n## Resumen Ejecutivo\n- **Total de Hosts:** 1\n- **Total de Dispositivos:** 25\n- **Dispositivos Online:** 23\n- **Dispositivos Offline:** 2\n\n## Estado por Tipo de Dispositivo\n- **GATEWAY:** 2/2 (100.0% online)\n- **SWITCH:** 7/8 (87.5% online)\n- **AP:** 14/15 (93.3% online)\n\n## Recomendaciones\n- ⚡ **ATENCIÓN:** Algunos dispositivos están offline\n"
+}

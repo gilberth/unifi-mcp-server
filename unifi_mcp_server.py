@@ -982,7 +982,8 @@ async def cleanup():
         logger.error(f"Error during cleanup: {str(e)}")
 
 
-if __name__ == "__main__":
+def main():
+    """Punto de entrada principal para el servidor MCP UniFi"""
     import atexit
     
     # Registrar función de limpieza
@@ -990,3 +991,7 @@ if __name__ == "__main__":
     
     # Ejecutar servidor MCP
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()
