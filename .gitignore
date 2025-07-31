@@ -17,6 +17,8 @@ pip-delete-this-directory.txt
 .env.local
 .env.production
 
+# Configuration files with sensitive data
+claude_desktop_config.json
 # Build outputs
 dist/
 build/
