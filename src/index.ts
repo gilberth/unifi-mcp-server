@@ -493,6 +493,42 @@ class UniFiMCPServer {
             required: ['rule_id', 'enabled']
           }
         },
+        // Logs and Events
+        {
+          name: 'unifi_get_events',
+          description: 'Obtiene eventos y logs del sistema UniFi',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              limit: {
+                type: 'number',
+                description: 'Número máximo de eventos a obtener',
+                default: 100
+              },
+              start: {
+                type: 'number',
+                description: 'Timestamp de inicio (Unix timestamp en milisegundos)'
+              },
+              end: {
+                type: 'number',
+                description: 'Timestamp de fin (Unix timestamp en milisegundos)'
+              },
+              type: {
+                type: 'string',
+                description: 'Tipo de evento (admin, user, guest, wireless, wired, vpn, wan, lan, firewall, etc.)'
+              },
+              key: {
+                type: 'string',
+                description: 'Clave específica del evento (EVT_GW_*, EVT_SW_*, etc.)'
+              }
+            }
+          }
+        },
         // Traffic Routes
         {
           name: 'unifi_create_traffic_route',
@@ -701,6 +737,9 @@ class UniFiMCPServer {
             return await this.createPortForward(args);
           case 'unifi_toggle_port_forward':
             return await this.togglePortForward(args);
+          // Logs and Events
+          case 'unifi_get_events':
+            return await this.getEvents(args);
           // Traffic Routes
           case 'unifi_create_traffic_route':
             return await this.createTrafficRoute(args);
@@ -1519,6 +1558,89 @@ class UniFiMCPServer {
       };
     } catch (error) {
       throw new Error(`Error al actualizar regla de port forwarding: ${error}`);
+    }
+  }
+
+  // Logs and Events Methods
+  private async getEvents(args: any) {
+    const { 
+      site_id = 'default', 
+      limit = 100, 
+      start, 
+      end, 
+      type, 
+      key 
+    } = args;
+
+    try {
+      // Construir parámetros de consulta
+      const params: any = {
+        _limit: limit
+      };
+
+      if (start) params.start = start;
+      if (end) params.end = end;
+      if (type) params.type = type;
+      if (key) params.key = key;
+
+      const queryString = new URLSearchParams(params).toString();
+      const endpoint = `/proxy/network/api/s/${site_id}/stat/event${queryString ? '?' + queryString : ''}`;
+      
+      const response = await getUnifiClient().get(endpoint);
+      const events = response.data || [];
+
+      const eventSummary = events.map((event: any) => ({
+        id: event._id,
+        key: event.key,
+        type: event.type || 'unknown',
+        datetime: event.datetime ? new Date(event.datetime * 1000).toISOString() : 'N/A',
+        message: event.msg || 'Sin mensaje',
+        subsystem: event.subsystem || 'unknown',
+        site_id: event.site_id,
+        user: event.user || 'system',
+        admin: event.admin || 'N/A',
+        client: event.client || 'N/A',
+        hostname: event.hostname || 'N/A',
+        ip: event.ip || 'N/A',
+        mac: event.mac || 'N/A',
+        ap: event.ap || 'N/A',
+        sw: event.sw || 'N/A',
+        gw: event.gw || 'N/A'
+      }));
+
+      // Filtrar eventos relacionados con port forwarding si es necesario
+      const portForwardingEvents = eventSummary.filter((event: any) => 
+        event.key?.includes('EVT_GW_') || 
+        event.message?.toLowerCase().includes('port') ||
+        event.message?.toLowerCase().includes('forward') ||
+        event.message?.toLowerCase().includes('nat') ||
+        event.subsystem === 'wan' ||
+        event.subsystem === 'lan'
+      );
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_events: eventSummary.length,
+              port_forwarding_related: portForwardingEvents.length,
+              events: eventSummary,
+              port_forwarding_events: portForwardingEvents,
+              filters_applied: {
+                site_id,
+                limit,
+                start: start ? new Date(start).toISOString() : 'N/A',
+                end: end ? new Date(end).toISOString() : 'N/A',
+                type: type || 'all',
+                key: key || 'all'
+              }
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener eventos: ${error}`);
     }
   }
 
