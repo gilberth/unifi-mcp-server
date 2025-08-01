@@ -2,6 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/unifi-mcp-server.svg)](https://badge.fury.io/js/unifi-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://github.com/gilberth/unifi-mcp-server/workflows/Build%20and%20Publish%20to%20NPM/badge.svg)](https://github.com/gilberth/unifi-mcp-server/actions)
 
 Un servidor MCP (Model Context Protocol) para interactuar con controladores UniFi locales. Este servidor permite a Claude Desktop y otros clientes MCP consultar información de dispositivos, clientes, estado de salud y configuraciones de red de tu infraestructura UniFi.
 
