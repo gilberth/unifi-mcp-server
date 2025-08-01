@@ -1,6 +1,6 @@
 # UniFi MCP Server
 
-[![npm version](https://badge.fury.io/js/unifi-mcp-server.svg)](https://badge.fury.io/js/unifi-mcp-server)
+[![npm version](https://badge.fury.io/js/@thelord%2Funifi-mcp-server.svg)](https://badge.fury.io/js/@thelord%2Funifi-mcp-server)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/gilberth/unifi-mcp-server/workflows/Build%20and%20Publish%20to%20NPM/badge.svg)](https://github.com/gilberth/unifi-mcp-server/actions)
 
@@ -38,13 +38,13 @@ Un servidor MCP (Model Context Protocol) para interactuar con controladores UniF
 ### Opción 1: Uso temporal con npx (Recomendado para pruebas)
 
 ```bash
-npx unifi-mcp-server@latest
+npx @thelord/unifi-mcp-server@latest
 ```
 
 ### Opción 2: Instalación global
 
 ```bash
-npm install -g unifi-mcp-server
+npm install -g @thelord/unifi-mcp-server
 ```
 
 ### Opción 3: Instalación desde código fuente
@@ -100,7 +100,7 @@ Para usar con Claude Desktop, agrega la siguiente configuración a tu archivo `c
   "mcpServers": {
     "unifi-mcp-server": {
       "command": "npx",
-      "args": ["unifi-mcp-server@latest"],
+      "args": ["@thelord/unifi-mcp-server@latest"],
       "env": {
         "UNIFI_HOST": "192.168.1.1",
         "UNIFI_USERNAME": "admin",
@@ -119,7 +119,7 @@ Para usar con Claude Desktop, agrega la siguiente configuración a tu archivo `c
 {
   "mcpServers": {
     "unifi-mcp-server": {
-      "command": "unifi-mcp-server",
+      "command": "@thelord/unifi-mcp-server",
       "env": {
         "UNIFI_HOST": "192.168.1.1",
         "UNIFI_USERNAME": "admin",
@@ -169,10 +169,10 @@ Para usar con Claude Desktop, agrega la siguiente configuración a tu archivo `c
 
 ```bash
 # Usando npx (temporal)
-npx unifi-mcp-server
+npx @thelord/unifi-mcp-server
 
 # Si instalaste globalmente
-unifi-mcp-server
+@thelord/unifi-mcp-server
 
 # Desde código fuente
 npm start
@@ -413,7 +413,7 @@ Si encuentras algún problema o tienes preguntas:
 ## 🔗 Enlaces útiles
 
 - **Repositorio GitHub**: https://github.com/gilberth/unifi-mcp-server-ts
-- **Paquete npm**: https://www.npmjs.com/package/unifi-mcp-server
+- **Paquete npm**: https://www.npmjs.com/package/@thelord/unifi-mcp-server
 - **Model Context Protocol**: https://modelcontextprotocol.io/
 - **Claude Desktop**: https://claude.ai/desktop
 

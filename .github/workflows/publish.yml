@@ -93,7 +93,7 @@ jobs:
         echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
         
         # Verificar si esta versión ya existe en npm
-        if npm view unifi-mcp-server@$CURRENT_VERSION version 2>/dev/null; then
+        if npm view @thelord/unifi-mcp-server@$CURRENT_VERSION version 2>/dev/null; then
           echo "version_exists=true" >> $GITHUB_OUTPUT
           echo "Version $CURRENT_VERSION already exists in npm"
         else
@@ -147,7 +147,7 @@ jobs:
           
           ### 📦 Instalación
           ```bash
-          npm install -g unifi-mcp-server@${{ steps.version-check.outputs.current_version }}
+          npm install -g @thelord/unifi-mcp-server@${{ steps.version-check.outputs.current_version }}
           ```
           
           ### 📋 Herramientas Disponibles
