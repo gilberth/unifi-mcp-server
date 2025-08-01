@@ -1,7 +1,7 @@
 {
   "name": "@thelord/unifi-mcp-server",
-  "version": "1.1.5",
-  "description": "Servidor MCP para gestión avanzada de redes UniFi con QoS, VPN, Port Forwarding, Traffic Routes y Firewall",
+  "version": "1.2.0",
+  "description": "Servidor MCP completo para gestión de redes UniFi: clientes, WLAN, estadísticas, hotspot, DPI, QoS, VPN, firewall y más",
   "main": "dist/index.js",
   "bin": {
     "@thelord/unifi-mcp-server": "dist/index.js"

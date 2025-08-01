@@ -1,8 +1,9 @@
 {
   "mcpServers": {
     "unifi-mcp-server": {
-      "command": "npx",
-      "args": ["@thelord/unifi-mcp-server"],
+      "command": "node",
+      "args": ["dist/index.js"],
+      "cwd": "/Users/gilberth/Documents/mcpunifi",
       "env": {
         "UNIFI_ROUTER_IP": "192.168.1.1",
         "UNIFI_USERNAME": "admin",

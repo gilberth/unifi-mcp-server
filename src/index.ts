@@ -730,6 +730,467 @@ class UniFiMCPServer {
               }
             }
           }
+        },
+        // Client Management
+        {
+          name: 'unifi_block_client',
+          description: 'Bloquea un cliente específico',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              client_mac: {
+                type: 'string',
+                description: 'Dirección MAC del cliente'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['client_mac']
+          }
+        },
+        {
+          name: 'unifi_unblock_client',
+          description: 'Desbloquea un cliente específico',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              client_mac: {
+                type: 'string',
+                description: 'Dirección MAC del cliente'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['client_mac']
+          }
+        },
+        {
+          name: 'unifi_reconnect_client',
+          description: 'Reconecta un cliente específico (kick y reconexión)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              client_mac: {
+                type: 'string',
+                description: 'Dirección MAC del cliente'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['client_mac']
+          }
+        },
+        // WLAN Management
+        {
+          name: 'unifi_create_wlan',
+          description: 'Crea una nueva red WiFi',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Nombre de la red WiFi'
+              },
+              x_passphrase: {
+                type: 'string',
+                description: 'Contraseña de la red WiFi'
+              },
+              security: {
+                type: 'string',
+                description: 'Tipo de seguridad (wpapsk, wpa2psk, wpa3psk)',
+                default: 'wpa2psk'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Si la red está habilitada',
+                default: true
+              },
+              is_guest: {
+                type: 'boolean',
+                description: 'Si es una red de invitados',
+                default: false
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['name', 'x_passphrase']
+          }
+        },
+        {
+          name: 'unifi_edit_wlan',
+          description: 'Edita una red WiFi existente',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              wlan_id: {
+                type: 'string',
+                description: 'ID de la red WiFi'
+              },
+              name: {
+                type: 'string',
+                description: 'Nuevo nombre de la red WiFi'
+              },
+              x_passphrase: {
+                type: 'string',
+                description: 'Nueva contraseña de la red WiFi'
+              },
+              security: {
+                type: 'string',
+                description: 'Tipo de seguridad (wpapsk, wpa2psk, wpa3psk)'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Estado de la red'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['wlan_id']
+          }
+        },
+        {
+          name: 'unifi_delete_wlan',
+          description: 'Elimina una red WiFi',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              wlan_id: {
+                type: 'string',
+                description: 'ID de la red WiFi'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['wlan_id']
+          }
+        },
+        {
+          name: 'unifi_enable_wlan',
+          description: 'Habilita una red WiFi',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              wlan_id: {
+                type: 'string',
+                description: 'ID de la red WiFi'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['wlan_id']
+          }
+        },
+        {
+          name: 'unifi_disable_wlan',
+          description: 'Deshabilita una red WiFi',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              wlan_id: {
+                type: 'string',
+                description: 'ID de la red WiFi'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['wlan_id']
+          }
+        },
+        // Detailed Statistics
+        {
+          name: 'unifi_get_client_stats',
+          description: 'Obtiene estadísticas detalladas de clientes',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              client_mac: {
+                type: 'string',
+                description: 'MAC del cliente específico (opcional)'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_get_device_stats',
+          description: 'Obtiene estadísticas detalladas de dispositivos',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              device_mac: {
+                type: 'string',
+                description: 'MAC del dispositivo específico (opcional)'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_get_sysinfo_stats',
+          description: 'Obtiene información detallada del sistema',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_get_authorization_stats',
+          description: 'Obtiene estadísticas de autorización',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              start: {
+                type: 'number',
+                description: 'Timestamp de inicio'
+              },
+              end: {
+                type: 'number',
+                description: 'Timestamp de fin'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_get_sdn_stats',
+          description: 'Obtiene estado de conexión a la nube UniFi',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        // Hotspot and Captive Portal
+        {
+          name: 'unifi_create_hotspot',
+          description: 'Crea un nuevo hotspot',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Nombre del hotspot'
+              },
+              portal_enabled: {
+                type: 'boolean',
+                description: 'Habilitar portal cautivo',
+                default: true
+              },
+              portal_customized: {
+                type: 'boolean',
+                description: 'Portal personalizado',
+                default: false
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['name']
+          }
+        },
+        {
+          name: 'unifi_list_hotspot_operators',
+          description: 'Lista todos los operadores de hotspot',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_create_voucher',
+          description: 'Crea un nuevo voucher para acceso de invitados',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              minutes: {
+                type: 'number',
+                description: 'Duración en minutos',
+                default: 60
+              },
+              count: {
+                type: 'number',
+                description: 'Número de vouchers a crear',
+                default: 1
+              },
+              quota: {
+                type: 'number',
+                description: 'Límite de uso por voucher',
+                default: 1
+              },
+              note: {
+                type: 'string',
+                description: 'Nota descriptiva'
+              },
+              up: {
+                type: 'number',
+                description: 'Límite de subida en Kbps'
+              },
+              down: {
+                type: 'number',
+                description: 'Límite de descarga en Kbps'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_list_vouchers',
+          description: 'Lista todos los vouchers',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              create_time: {
+                type: 'number',
+                description: 'Filtrar por tiempo de creación'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_revoke_voucher',
+          description: 'Revoca un voucher específico',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              voucher_id: {
+                type: 'string',
+                description: 'ID del voucher'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['voucher_id']
+          }
+        },
+        // DPI (Deep Packet Inspection)
+        {
+          name: 'unifi_list_dpi_stats',
+          description: 'Obtiene estadísticas de DPI (Deep Packet Inspection)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              type: {
+                type: 'string',
+                description: 'Tipo de estadística (by_app, by_cat)',
+                default: 'by_app'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_list_dpi_apps',
+          description: 'Lista aplicaciones detectadas por DPI',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_set_dpi_restrictions',
+          description: 'Configura restricciones de DPI',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              app_id: {
+                type: 'string',
+                description: 'ID de la aplicación'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Habilitar restricción',
+                default: true
+              },
+              blocked: {
+                type: 'boolean',
+                description: 'Bloquear aplicación',
+                default: false
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['app_id']
+          }
         }
       ]
     }));
@@ -799,6 +1260,53 @@ class UniFiMCPServer {
             return await this.createFirewallPolicy(args);
           case 'unifi_list_firewall_zones':
             return await this.listFirewallZones(args);
+          // Client Management
+          case 'unifi_block_client':
+            return await this.blockClient(args);
+          case 'unifi_unblock_client':
+            return await this.unblockClient(args);
+          case 'unifi_reconnect_client':
+            return await this.reconnectClient(args);
+          // WLAN Management
+          case 'unifi_create_wlan':
+            return await this.createWlan(args);
+          case 'unifi_edit_wlan':
+            return await this.editWlan(args);
+          case 'unifi_delete_wlan':
+            return await this.deleteWlan(args);
+          case 'unifi_enable_wlan':
+            return await this.enableWlan(args);
+          case 'unifi_disable_wlan':
+            return await this.disableWlan(args);
+          // Detailed Statistics
+          case 'unifi_get_client_stats':
+            return await this.getClientStats(args);
+          case 'unifi_get_device_stats':
+            return await this.getDeviceStats(args);
+          case 'unifi_get_sysinfo_stats':
+            return await this.getSysinfoStats(args);
+          case 'unifi_get_authorization_stats':
+            return await this.getAuthorizationStats(args);
+          case 'unifi_get_sdn_stats':
+            return await this.getSdnStats(args);
+          // Hotspot and Captive Portal
+          case 'unifi_create_hotspot':
+            return await this.createHotspot(args);
+          case 'unifi_list_hotspot_operators':
+            return await this.listHotspotOperators(args);
+          case 'unifi_create_voucher':
+            return await this.createVoucher(args);
+          case 'unifi_list_vouchers':
+            return await this.listVouchers(args);
+          case 'unifi_revoke_voucher':
+            return await this.revokeVoucher(args);
+          // DPI (Deep Packet Inspection)
+          case 'unifi_list_dpi_stats':
+            return await this.listDpiStats(args);
+          case 'unifi_list_dpi_apps':
+            return await this.listDpiApps(args);
+          case 'unifi_set_dpi_restrictions':
+            return await this.setDpiRestrictions(args);
           default:
             throw new McpError(
               ErrorCode.MethodNotFound,
@@ -884,7 +1392,7 @@ class UniFiMCPServer {
         hostname: client.hostname || 'Sin nombre',
         ip: client.ip,
         connection_type: client.is_wired ? 'Cableado' : 'WiFi',
-        last_seen: client.last_seen ? new Date(client.last_seen * 1000).toISOString() : 'N/A',
+        last_seen: client.last_seen ? new Date(Number(client.last_seen) * 1000).toISOString() : 'N/A',
         rx_bytes: client.rx_bytes ? Math.round((client.rx_bytes / 1024 / 1024) * 100) / 100 + ' MB' : 'N/A',
         tx_bytes: client.tx_bytes ? Math.round((client.tx_bytes / 1024 / 1024) * 100) / 100 + ' MB' : 'N/A'
       }));
@@ -1914,6 +2422,760 @@ class UniFiMCPServer {
       };
     } catch (error) {
       throw new Error(`Error al obtener zonas de firewall: ${error}`);
+    }
+  }
+
+  // Client Management Methods
+  private async blockClient(args: any) {
+    const { client_mac, site_id = 'default' } = args;
+
+    if (!client_mac) {
+      throw new Error('client_mac es requerido');
+    }
+
+    try {
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/cmd/stamgr`, {
+        cmd: 'block-sta',
+        mac: client_mac
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Cliente ${client_mac} bloqueado exitosamente`,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al bloquear cliente: ${error}`);
+    }
+  }
+
+  private async unblockClient(args: any) {
+    const { client_mac, site_id = 'default' } = args;
+
+    if (!client_mac) {
+      throw new Error('client_mac es requerido');
+    }
+
+    try {
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/cmd/stamgr`, {
+        cmd: 'unblock-sta',
+        mac: client_mac
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Cliente ${client_mac} desbloqueado exitosamente`,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al desbloquear cliente: ${error}`);
+    }
+  }
+
+  private async reconnectClient(args: any) {
+    const { client_mac, site_id = 'default' } = args;
+
+    if (!client_mac) {
+      throw new Error('client_mac es requerido');
+    }
+
+    try {
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/cmd/stamgr`, {
+        cmd: 'kick-sta',
+        mac: client_mac
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Cliente ${client_mac} reconectado exitosamente`,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al reconectar cliente: ${error}`);
+    }
+  }
+
+  // WLAN Management Methods
+  private async createWlan(args: any) {
+    const {
+      name,
+      x_passphrase,
+      security = 'wpa2psk',
+      enabled = true,
+      is_guest = false,
+      site_id = 'default'
+    } = args;
+
+    if (!name || !x_passphrase) {
+      throw new Error('name y x_passphrase son requeridos');
+    }
+
+    try {
+      const wlanData = {
+        name,
+        x_passphrase,
+        security,
+        enabled,
+        is_guest,
+        wpa_mode: 'wpa2',
+        wpa_enc: 'ccmp',
+        usergroup_id: is_guest ? 'guest' : 'default'
+      };
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/wlanconf`, wlanData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Red WiFi '${name}' creada exitosamente`,
+              wlan: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear red WiFi: ${error}`);
+    }
+  }
+
+  private async editWlan(args: any) {
+    const {
+      wlan_id,
+      name,
+      x_passphrase,
+      security,
+      enabled,
+      site_id = 'default'
+    } = args;
+
+    if (!wlan_id) {
+      throw new Error('wlan_id es requerido');
+    }
+
+    try {
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (x_passphrase !== undefined) updateData.x_passphrase = x_passphrase;
+      if (security !== undefined) updateData.security = security;
+      if (enabled !== undefined) updateData.enabled = enabled;
+
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/wlanconf/${wlan_id}`, updateData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Red WiFi actualizada exitosamente',
+              wlan: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al editar red WiFi: ${error}`);
+    }
+  }
+
+  private async deleteWlan(args: any) {
+    const { wlan_id, site_id = 'default' } = args;
+
+    if (!wlan_id) {
+      throw new Error('wlan_id es requerido');
+    }
+
+    try {
+      await getUnifiClient().delete(`/proxy/network/api/s/${site_id}/rest/wlanconf/${wlan_id}`);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Red WiFi eliminada exitosamente',
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al eliminar red WiFi: ${error}`);
+    }
+  }
+
+  private async enableWlan(args: any) {
+    const { wlan_id, site_id = 'default' } = args;
+
+    if (!wlan_id) {
+      throw new Error('wlan_id es requerido');
+    }
+
+    try {
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/wlanconf/${wlan_id}`, {
+        enabled: true
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Red WiFi habilitada exitosamente',
+              wlan: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al habilitar red WiFi: ${error}`);
+    }
+  }
+
+  private async disableWlan(args: any) {
+    const { wlan_id, site_id = 'default' } = args;
+
+    if (!wlan_id) {
+      throw new Error('wlan_id es requerido');
+    }
+
+    try {
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/wlanconf/${wlan_id}`, {
+        enabled: false
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Red WiFi deshabilitada exitosamente',
+              wlan: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al deshabilitar red WiFi: ${error}`);
+    }
+  }
+
+  // Detailed Statistics Methods
+  private async getClientStats(args: any) {
+    const { site_id = 'default', client_mac } = args;
+
+    try {
+      let endpoint = `/proxy/network/api/s/${site_id}/stat/sta`;
+      if (client_mac) {
+        endpoint += `/${client_mac}`;
+      }
+
+      const response = await getUnifiClient().get(endpoint);
+      const clients = response.data || [];
+
+      const clientStats = clients.map((client: any) => ({
+        mac: client.mac,
+        hostname: client.hostname || 'Sin nombre',
+        ip: client.ip,
+        rx_bytes: client.rx_bytes,
+        tx_bytes: client.tx_bytes,
+        rx_packets: client.rx_packets,
+        tx_packets: client.tx_packets,
+        signal: client.signal,
+        noise: client.noise,
+        rssi: client.rssi,
+        uptime: client.uptime,
+        last_seen: client.last_seen ? new Date(Number(client.last_seen) * 1000).toISOString() : 'N/A',
+        is_wired: client.is_wired,
+        network: client.network,
+        ap_mac: client.ap_mac
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_clients: clientStats.length,
+              client_stats: clientStats,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener estadísticas de clientes: ${error}`);
+    }
+  }
+
+  private async getDeviceStats(args: any) {
+    const { site_id = 'default', device_mac } = args;
+
+    try {
+      let endpoint = `/proxy/network/api/s/${site_id}/stat/device`;
+      if (device_mac) {
+        endpoint += `/${device_mac}`;
+      }
+
+      const response = await getUnifiClient().get(endpoint);
+      const devices = response.data || [];
+
+      const deviceStats = devices.map((device: any) => ({
+        mac: device.mac,
+        name: device.name || 'Sin nombre',
+        type: device.type,
+        model: device.model,
+        version: device.version,
+        state: device.state,
+        uptime: device.uptime,
+        last_seen: device.last_seen ? new Date(Number(device.last_seen) * 1000).toISOString() : 'N/A',
+        bytes: device.bytes,
+        rx_bytes: device.rx_bytes,
+        tx_bytes: device.tx_bytes,
+        num_sta: device.num_sta,
+        user_num_sta: device.user_num_sta,
+        guest_num_sta: device.guest_num_sta,
+        cpu: device.system_stats?.cpu,
+        mem: device.system_stats?.mem,
+        loadavg_1: device.loadavg_1,
+        loadavg_5: device.loadavg_5,
+        loadavg_15: device.loadavg_15
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_devices: deviceStats.length,
+              device_stats: deviceStats,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener estadísticas de dispositivos: ${error}`);
+    }
+  }
+
+  private async getSysinfoStats(args: any) {
+    const { site_id = 'default' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/stat/sysinfo`);
+      const sysinfo = response.data?.[0] || {};
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              system_stats: {
+                version: sysinfo.version,
+                build: sysinfo.build,
+                hostname: sysinfo.hostname,
+                ip: sysinfo.ip,
+                netmask: sysinfo.netmask,
+                gateway: sysinfo.gateway,
+                dns: sysinfo.dns,
+                uptime: sysinfo.uptime,
+                timezone: sysinfo.timezone,
+                autobackup: sysinfo.autobackup,
+                data_retention_days: sysinfo.data_retention_days,
+                data_retention_time_in_hours_for_5minutes_scale: sysinfo.data_retention_time_in_hours_for_5minutes_scale,
+                data_retention_time_in_hours_for_hourly_scale: sysinfo.data_retention_time_in_hours_for_hourly_scale,
+                data_retention_time_in_hours_for_daily_scale: sysinfo.data_retention_time_in_hours_for_daily_scale,
+                data_retention_time_in_hours_for_monthly_scale: sysinfo.data_retention_time_in_hours_for_monthly_scale
+              },
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener información del sistema: ${error}`);
+    }
+  }
+
+  private async getAuthorizationStats(args: any) {
+    const { site_id = 'default', start, end } = args;
+
+    try {
+      let endpoint = `/proxy/network/api/s/${site_id}/stat/authorization`;
+      if (start || end) {
+        const queryParams = [];
+        if (start) queryParams.push(`start=${start}`);
+        if (end) queryParams.push(`end=${end}`);
+        endpoint += `?${queryParams.join('&')}`;
+      }
+
+      const response = await getUnifiClient().get(endpoint);
+      const authStats = response.data || [];
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_authorizations: authStats.length,
+              authorization_stats: authStats,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener estadísticas de autorización: ${error}`);
+    }
+  }
+
+  private async getSdnStats(args: any) {
+    const { site_id = 'default' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/stat/sdn`);
+      const sdnStats = response.data || {};
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              sdn_stats: sdnStats,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener estado de conexión a la nube: ${error}`);
+    }
+  }
+
+  // Hotspot and Captive Portal Methods
+  private async createHotspot(args: any) {
+    const {
+      name,
+      portal_enabled = true,
+      portal_customized = false,
+      site_id = 'default'
+    } = args;
+
+    if (!name) {
+      throw new Error('name es requerido');
+    }
+
+    try {
+      const hotspotData = {
+        name,
+        portal_enabled,
+        portal_customized,
+        auth: 'hotspot',
+        portal_use_hostname: true
+      };
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/hotspotop`, hotspotData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Hotspot '${name}' creado exitosamente`,
+              hotspot: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear hotspot: ${error}`);
+    }
+  }
+
+  private async listHotspotOperators(args: any) {
+    const { site_id = 'default' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/rest/hotspotop`);
+      const operators = response.data || [];
+
+      const operatorSummary = operators.map((op: any) => ({
+        id: op._id,
+        name: op.name,
+        note: op.note,
+        portal_enabled: op.portal_enabled,
+        portal_customized: op.portal_customized
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_operators: operatorSummary.length,
+              operators: operatorSummary,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener operadores de hotspot: ${error}`);
+    }
+  }
+
+  private async createVoucher(args: any) {
+    const {
+      minutes = 60,
+      count = 1,
+      quota = 1,
+      note,
+      up,
+      down,
+      site_id = 'default'
+    } = args;
+
+    try {
+      const voucherData: any = {
+        cmd: 'create-voucher',
+        expire: minutes,
+        n: count,
+        quota
+      };
+
+      if (note) voucherData.note = note;
+      if (up) voucherData.up = up;
+      if (down) voucherData.down = down;
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/cmd/hotspot`, voucherData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `${count} voucher(s) creado(s) exitosamente`,
+              vouchers: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear voucher: ${error}`);
+    }
+  }
+
+  private async listVouchers(args: any) {
+    const { site_id = 'default', create_time } = args;
+
+    try {
+      let endpoint = `/proxy/network/api/s/${site_id}/stat/voucher`;
+      if (create_time) {
+        endpoint += `?create_time=${create_time}`;
+      }
+
+      const response = await getUnifiClient().get(endpoint);
+      const vouchers = response.data || [];
+
+      const voucherSummary = vouchers.map((voucher: any) => ({
+        id: voucher._id,
+        code: voucher.code,
+        note: voucher.note,
+        quota: voucher.quota,
+        used: voucher.used,
+        duration: voucher.duration,
+        create_time: voucher.create_time ? new Date(Number(voucher.create_time) * 1000).toISOString() : 'N/A',
+        start_time: voucher.start_time ? new Date(Number(voucher.start_time) * 1000).toISOString() : 'N/A',
+        end_time: voucher.end_time ? new Date(Number(voucher.end_time) * 1000).toISOString() : 'N/A',
+        status: voucher.status
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_vouchers: voucherSummary.length,
+              vouchers: voucherSummary,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener vouchers: ${error}`);
+    }
+  }
+
+  private async revokeVoucher(args: any) {
+    const { voucher_id, site_id = 'default' } = args;
+
+    if (!voucher_id) {
+      throw new Error('voucher_id es requerido');
+    }
+
+    try {
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/cmd/hotspot`, {
+        cmd: 'delete-voucher',
+        _id: voucher_id
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Voucher revocado exitosamente',
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al revocar voucher: ${error}`);
+    }
+  }
+
+  // DPI (Deep Packet Inspection) Methods
+  private async listDpiStats(args: any) {
+    const { site_id = 'default', type = 'by_app' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/stat/dpi`);
+      const dpiStats = response.data || [];
+
+      let processedStats;
+      if (type === 'by_app') {
+        processedStats = dpiStats.filter((stat: any) => stat.app);
+      } else if (type === 'by_cat') {
+        processedStats = dpiStats.filter((stat: any) => stat.cat);
+      } else {
+        processedStats = dpiStats;
+      }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_stats: processedStats.length,
+              dpi_stats: processedStats,
+              type,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener estadísticas DPI: ${error}`);
+    }
+  }
+
+  private async listDpiApps(args: any) {
+    const { site_id = 'default' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/rest/dpiapp`);
+      const apps = response.data || [];
+
+      const appSummary = apps.map((app: any) => ({
+        id: app._id,
+        name: app.name,
+        cat: app.cat,
+        enabled: app.enabled,
+        blocked: app.blocked,
+        log: app.log
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_apps: appSummary.length,
+              dpi_apps: appSummary,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener aplicaciones DPI: ${error}`);
+    }
+  }
+
+  private async setDpiRestrictions(args: any) {
+    const {
+      app_id,
+      enabled = true,
+      blocked = false,
+      site_id = 'default'
+    } = args;
+
+    if (!app_id) {
+      throw new Error('app_id es requerido');
+    }
+
+    try {
+      const restrictionData = {
+        enabled,
+        blocked
+      };
+
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/dpiapp/${app_id}`, restrictionData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Restricciones DPI configuradas exitosamente',
+              app: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al configurar restricciones DPI: ${error}`);
     }
   }
 
