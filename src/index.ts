@@ -8,7 +8,8 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-import { unifiClient, UniFiDevice, UniFiClient, UniFiHealthStatus } from './unifi-client.js';
+import { getUnifiClient, UniFiDevice, UniFiClient, UniFiHealthStatus } from './unifi-client.js';
+import { getUniFiConfig } from './config.js';
 
 class UniFiMCPServer {
   private server: Server;
@@ -33,7 +34,7 @@ class UniFiMCPServer {
   private setupErrorHandling(): void {
     this.server.onerror = (error) => console.error('[MCP Error]', error);
     process.on('SIGINT', async () => {
-      await unifiClient.close();
+      await getUnifiClient().close();
       process.exit(0);
     });
   }
@@ -286,9 +287,342 @@ class UniFiMCPServer {
             }
           }
         },
-        {
+                {
           name: 'list_network_configs',
           description: 'Lista todas las configuraciones de red (VLANs, etc.)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        // QoS Management
+        {
+          name: 'unifi_create_qos_rule',
+          description: 'Crea una nueva regla de QoS para control de ancho de banda',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Nombre de la regla QoS'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Si la regla está habilitada',
+                default: true
+              },
+              download_limit: {
+                type: 'number',
+                description: 'Límite de descarga en Kbps'
+              },
+              upload_limit: {
+                type: 'number',
+                description: 'Límite de subida en Kbps'
+              },
+              target_type: {
+                type: 'string',
+                description: 'Tipo de objetivo (client, network, device)',
+                default: 'client'
+              },
+              target_value: {
+                type: 'string',
+                description: 'Valor del objetivo (MAC, IP, CIDR)'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['name', 'download_limit', 'upload_limit', 'target_value']
+          }
+        },
+        {
+          name: 'unifi_toggle_qos_rule_enabled',
+          description: 'Habilita o deshabilita una regla de QoS existente',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              rule_id: {
+                type: 'string',
+                description: 'ID de la regla QoS'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Estado deseado de la regla'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['rule_id', 'enabled']
+          }
+        },
+        // VPN Management
+        {
+          name: 'unifi_list_vpn_clients',
+          description: 'Lista todos los clientes VPN configurados',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              },
+              active_only: {
+                type: 'boolean',
+                description: 'Solo mostrar clientes VPN activos',
+                default: false
+              }
+            }
+          }
+        },
+        {
+          name: 'unifi_update_vpn_client_state',
+          description: 'Actualiza el estado de un cliente VPN (habilitar/deshabilitar)',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              client_id: {
+                type: 'string',
+                description: 'ID del cliente VPN'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Estado deseado del cliente VPN'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['client_id', 'enabled']
+          }
+        },
+        // Port Forwarding
+        {
+          name: 'unifi_create_port_forward',
+          description: 'Crea una nueva regla de port forwarding',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Nombre de la regla de port forwarding'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Si la regla está habilitada',
+                default: true
+              },
+              src_port: {
+                type: 'string',
+                description: 'Puerto origen (externo)'
+              },
+              dst_port: {
+                type: 'string',
+                description: 'Puerto destino (interno)'
+              },
+              dst_ip: {
+                type: 'string',
+                description: 'IP destino interna'
+              },
+              protocol: {
+                type: 'string',
+                description: 'Protocolo (tcp, udp, tcp_udp)',
+                default: 'tcp'
+              },
+              log: {
+                type: 'boolean',
+                description: 'Habilitar logging',
+                default: false
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['name', 'src_port', 'dst_port', 'dst_ip']
+          }
+        },
+        {
+          name: 'unifi_toggle_port_forward',
+          description: 'Habilita o deshabilita una regla de port forwarding',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              rule_id: {
+                type: 'string',
+                description: 'ID de la regla de port forwarding'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Estado deseado de la regla'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['rule_id', 'enabled']
+          }
+        },
+        // Traffic Routes
+        {
+          name: 'unifi_create_traffic_route',
+          description: 'Crea una nueva ruta de tráfico estática',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Nombre de la ruta'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Si la ruta está habilitada',
+                default: true
+              },
+              destination_network: {
+                type: 'string',
+                description: 'Red de destino (CIDR)'
+              },
+              gateway_ip: {
+                type: 'string',
+                description: 'IP del gateway'
+              },
+              interface: {
+                type: 'string',
+                description: 'Interfaz de red (opcional)'
+              },
+              metric: {
+                type: 'number',
+                description: 'Métrica de la ruta',
+                default: 1
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['name', 'destination_network', 'gateway_ip']
+          }
+        },
+        {
+          name: 'unifi_update_traffic_route',
+          description: 'Actualiza una ruta de tráfico existente',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              route_id: {
+                type: 'string',
+                description: 'ID de la ruta'
+              },
+              name: {
+                type: 'string',
+                description: 'Nuevo nombre de la ruta'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Estado de la ruta'
+              },
+              destination_network: {
+                type: 'string',
+                description: 'Nueva red de destino (CIDR)'
+              },
+              gateway_ip: {
+                type: 'string',
+                description: 'Nueva IP del gateway'
+              },
+              metric: {
+                type: 'number',
+                description: 'Nueva métrica de la ruta'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['route_id']
+          }
+        },
+        // Advanced Firewall
+        {
+          name: 'unifi_create_firewall_policy',
+          description: 'Crea una nueva política de firewall avanzada',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Nombre de la política'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Si la política está habilitada',
+                default: true
+              },
+              action: {
+                type: 'string',
+                description: 'Acción (accept, drop, reject)',
+                default: 'accept'
+              },
+              protocol: {
+                type: 'string',
+                description: 'Protocolo (tcp, udp, icmp, all)',
+                default: 'all'
+              },
+              src_zone: {
+                type: 'string',
+                description: 'Zona origen'
+              },
+              dst_zone: {
+                type: 'string',
+                description: 'Zona destino'
+              },
+              src_address_group: {
+                type: 'string',
+                description: 'Grupo de direcciones origen'
+              },
+              dst_address_group: {
+                type: 'string',
+                description: 'Grupo de direcciones destino'
+              },
+              dst_port_group: {
+                type: 'string',
+                description: 'Grupo de puertos destino'
+              },
+              logging: {
+                type: 'boolean',
+                description: 'Habilitar logging',
+                default: false
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['name', 'action']
+          }
+        },
+        {
+          name: 'unifi_list_firewall_zones',
+          description: 'Lista todas las zonas de firewall configuradas',
           inputSchema: {
             type: 'object',
             properties: {
@@ -336,6 +670,31 @@ class UniFiMCPServer {
             return await this.listWlanConfigs(args);
           case 'list_network_configs':
             return await this.listNetworkConfigs(args);
+          // QoS Management
+          case 'unifi_create_qos_rule':
+            return await this.createQosRule(args);
+          case 'unifi_toggle_qos_rule_enabled':
+            return await this.toggleQosRule(args);
+          // VPN Management
+          case 'unifi_list_vpn_clients':
+            return await this.listVpnClients(args);
+          case 'unifi_update_vpn_client_state':
+            return await this.updateVpnClientState(args);
+          // Port Forwarding
+          case 'unifi_create_port_forward':
+            return await this.createPortForward(args);
+          case 'unifi_toggle_port_forward':
+            return await this.togglePortForward(args);
+          // Traffic Routes
+          case 'unifi_create_traffic_route':
+            return await this.createTrafficRoute(args);
+          case 'unifi_update_traffic_route':
+            return await this.updateTrafficRoute(args);
+          // Advanced Firewall
+          case 'unifi_create_firewall_policy':
+            return await this.createFirewallPolicy(args);
+          case 'unifi_list_firewall_zones':
+            return await this.listFirewallZones(args);
           default:
             throw new McpError(
               ErrorCode.MethodNotFound,
@@ -358,7 +717,8 @@ class UniFiMCPServer {
     const status = args?.status;
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteName}/stat/device`);
+      const client = getUnifiClient();
+      const response = await client.get(`/proxy/network/api/s/${siteName}/stat/device`);
       let devices: UniFiDevice[] = response.data || [];
 
       // Filtrar por tipo de dispositivo si se especifica
@@ -408,10 +768,10 @@ class UniFiMCPServer {
 
     try {
       const endpoint = activeOnly 
-        ? `/api/s/${siteName}/stat/sta`
-        : `/api/s/${siteName}/rest/user`;
+        ? `/proxy/network/api/s/${siteName}/stat/sta`
+        : `/proxy/network/api/s/${siteName}/rest/user`;
       
-      const response = await unifiClient.get(endpoint);
+      const response = await getUnifiClient().get(endpoint);
       const clients: UniFiClient[] = response.data || [];
 
       const clientSummary = clients.map(client => ({
@@ -447,7 +807,7 @@ class UniFiMCPServer {
     const siteName = args?.site_name || 'default';
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteName}/stat/sysinfo`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/sysinfo`);
       const sysinfo = response.data?.[0] || {};
 
       return {
@@ -480,7 +840,7 @@ class UniFiMCPServer {
     const siteName = args?.site_name || 'default';
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteName}/stat/health`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/health`);
       const healthData: UniFiHealthStatus[] = response.data || [];
 
       const healthSummary = healthData.map(item => ({
@@ -515,8 +875,8 @@ class UniFiMCPServer {
 
     try {
       const [devicesResponse, healthResponse] = await Promise.all([
-        unifiClient.get(`/api/s/${siteName}/stat/device`),
-        unifiClient.get(`/api/s/${siteName}/stat/health`)
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/device`),
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/health`)
       ]);
 
       const devices: UniFiDevice[] = devicesResponse.data || [];
@@ -563,8 +923,8 @@ class UniFiMCPServer {
 
     try {
       const [healthResponse, devicesResponse] = await Promise.all([
-        unifiClient.get(`/api/s/${siteName}/stat/health`),
-        unifiClient.get(`/api/s/${siteName}/stat/device`)
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/health`),
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/device`)
       ]);
 
       const healthData: UniFiHealthStatus[] = healthResponse.data || [];
@@ -602,9 +962,9 @@ class UniFiMCPServer {
 
     try {
       const [devicesResponse, clientsResponse, healthResponse] = await Promise.all([
-        unifiClient.get(`/api/s/${siteName}/stat/device`),
-        unifiClient.get(`/api/s/${siteName}/stat/sta`),
-        unifiClient.get(`/api/s/${siteName}/stat/health`)
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/device`),
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/sta`),
+        getUnifiClient().get(`/proxy/network/api/s/${siteName}/stat/health`)
       ]);
 
       const devices: UniFiDevice[] = devicesResponse.data || [];
@@ -679,19 +1039,19 @@ class UniFiMCPServer {
       let endpoint = '';
       switch (metricType) {
         case 'device_stats':
-          endpoint = `/api/s/${siteName}/stat/device`;
+          endpoint = `/proxy/network/api/s/${siteName}/stat/device`;
           break;
         case 'client_stats':
-          endpoint = `/api/s/${siteName}/stat/sta`;
+          endpoint = `/proxy/network/api/s/${siteName}/stat/sta`;
           break;
         case 'health_stats':
-          endpoint = `/api/s/${siteName}/stat/health`;
+          endpoint = `/proxy/network/api/s/${siteName}/stat/health`;
           break;
         default:
-          endpoint = `/api/s/${siteName}/stat/device`;
+          endpoint = `/proxy/network/api/s/${siteName}/stat/device`;
       }
 
-      const response = await unifiClient.get(endpoint);
+      const response = await getUnifiClient().get(endpoint);
       const data = response.data || [];
 
       return {
@@ -717,7 +1077,7 @@ class UniFiMCPServer {
     const siteId = args?.site_id || 'default';
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteId}/rest/firewallrule`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteId}/rest/firewallrule`);
       const rules = response.data || [];
 
       return {
@@ -746,7 +1106,7 @@ class UniFiMCPServer {
     }
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteId}/rest/firewallrule/${ruleId}`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteId}/rest/firewallrule/${ruleId}`);
       const rule = response.data?.[0];
 
       return {
@@ -769,7 +1129,7 @@ class UniFiMCPServer {
     const siteId = args?.site_id || 'default';
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteId}/rest/firewallgroup`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteId}/rest/firewallgroup`);
       const groups = response.data || [];
 
       return {
@@ -816,7 +1176,7 @@ class UniFiMCPServer {
         ...(dst_port && { dst_port })
       };
 
-      const response = await unifiClient.post(`/api/s/${site_id}/rest/firewallrule`, ruleData);
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/firewallrule`, ruleData);
 
       return {
         content: [
@@ -839,7 +1199,7 @@ class UniFiMCPServer {
     const siteId = args?.site_id || 'default';
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteId}/rest/wlanconf`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteId}/rest/wlanconf`);
       const wlans = response.data || [];
 
       return {
@@ -863,7 +1223,7 @@ class UniFiMCPServer {
     const siteId = args?.site_id || 'default';
 
     try {
-      const response = await unifiClient.get(`/api/s/${siteId}/rest/networkconf`);
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${siteId}/rest/networkconf`);
       const networks = response.data || [];
 
       return {
@@ -880,6 +1240,405 @@ class UniFiMCPServer {
       };
     } catch (error) {
       throw new Error(`Error al obtener configuraciones de red: ${error}`);
+    }
+  }
+
+  // QoS Management Methods
+  private async createQosRule(args: any) {
+    const {
+      name,
+      enabled = true,
+      download_limit,
+      upload_limit,
+      target_type = 'client',
+      target_value,
+      site_id = 'default'
+    } = args;
+
+    if (!name || !download_limit || !upload_limit || !target_value) {
+      throw new Error('name, download_limit, upload_limit y target_value son requeridos');
+    }
+
+    try {
+      const qosData = {
+        name,
+        enabled,
+        download_limit_kbps: download_limit,
+        upload_limit_kbps: upload_limit,
+        target_type,
+        target_value
+      };
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/qosrule`, qosData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Regla QoS '${name}' creada exitosamente`,
+              rule: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear regla QoS: ${error}`);
+    }
+  }
+
+  private async toggleQosRule(args: any) {
+    const { rule_id, enabled, site_id = 'default' } = args;
+
+    if (!rule_id || enabled === undefined) {
+      throw new Error('rule_id y enabled son requeridos');
+    }
+
+    try {
+      const updateData = { enabled };
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/qosrule/${rule_id}`, updateData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Regla QoS ${enabled ? 'habilitada' : 'deshabilitada'} exitosamente`,
+              rule: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al actualizar regla QoS: ${error}`);
+    }
+  }
+
+  // VPN Management Methods
+  private async listVpnClients(args: any) {
+    const { site_id = 'default', active_only = false } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/rest/vpnclient`);
+      let vpnClients = response.data || [];
+
+      if (active_only) {
+        vpnClients = vpnClients.filter((client: any) => client.enabled && client.connected);
+      }
+
+      const clientSummary = vpnClients.map((client: any) => ({
+        id: client._id,
+        name: client.name,
+        enabled: client.enabled,
+        connected: client.connected || false,
+        type: client.type,
+        server: client.server,
+        username: client.username,
+        last_connected: client.last_connected ? new Date(client.last_connected * 1000).toISOString() : 'Nunca'
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_vpn_clients: clientSummary.length,
+              active_clients: clientSummary.filter((c: any) => c.connected).length,
+              clients: clientSummary,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener clientes VPN: ${error}`);
+    }
+  }
+
+  private async updateVpnClientState(args: any) {
+    const { client_id, enabled, site_id = 'default' } = args;
+
+    if (!client_id || enabled === undefined) {
+      throw new Error('client_id y enabled son requeridos');
+    }
+
+    try {
+      const updateData = { enabled };
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/vpnclient/${client_id}`, updateData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Cliente VPN ${enabled ? 'habilitado' : 'deshabilitado'} exitosamente`,
+              client: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al actualizar cliente VPN: ${error}`);
+    }
+  }
+
+  // Port Forwarding Methods
+  private async createPortForward(args: any) {
+    const {
+      name,
+      enabled = true,
+      src_port,
+      dst_port,
+      dst_ip,
+      protocol = 'tcp',
+      log = false,
+      site_id = 'default'
+    } = args;
+
+    if (!name || !src_port || !dst_port || !dst_ip) {
+      throw new Error('name, src_port, dst_port y dst_ip son requeridos');
+    }
+
+    try {
+      const portForwardData = {
+        name,
+        enabled,
+        src: 'wan',
+        dst: 'lan',
+        fwd_port: src_port,
+        fwd_ip: dst_ip,
+        fwd_port_to: dst_port,
+        proto: protocol,
+        log
+      };
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/portforward`, portForwardData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Regla de port forwarding '${name}' creada exitosamente`,
+              rule: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear regla de port forwarding: ${error}`);
+    }
+  }
+
+  private async togglePortForward(args: any) {
+    const { rule_id, enabled, site_id = 'default' } = args;
+
+    if (!rule_id || enabled === undefined) {
+      throw new Error('rule_id y enabled son requeridos');
+    }
+
+    try {
+      const updateData = { enabled };
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/portforward/${rule_id}`, updateData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Regla de port forwarding ${enabled ? 'habilitada' : 'deshabilitada'} exitosamente`,
+              rule: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al actualizar regla de port forwarding: ${error}`);
+    }
+  }
+
+  // Traffic Routes Methods
+  private async createTrafficRoute(args: any) {
+    const {
+      name,
+      enabled = true,
+      destination_network,
+      gateway_ip,
+      interface: iface,
+      metric = 1,
+      site_id = 'default'
+    } = args;
+
+    if (!name || !destination_network || !gateway_ip) {
+      throw new Error('name, destination_network y gateway_ip son requeridos');
+    }
+
+    try {
+      const routeData = {
+        name,
+        enabled,
+        static_route_network: destination_network,
+        static_route_nexthop: gateway_ip,
+        static_route_distance: metric,
+        ...(iface && { static_route_interface: iface })
+      };
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/routing`, routeData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Ruta de tráfico '${name}' creada exitosamente`,
+              route: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear ruta de tráfico: ${error}`);
+    }
+  }
+
+  private async updateTrafficRoute(args: any) {
+    const {
+      route_id,
+      name,
+      enabled,
+      destination_network,
+      gateway_ip,
+      metric,
+      site_id = 'default'
+    } = args;
+
+    if (!route_id) {
+      throw new Error('route_id es requerido');
+    }
+
+    try {
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (enabled !== undefined) updateData.enabled = enabled;
+      if (destination_network !== undefined) updateData.static_route_network = destination_network;
+      if (gateway_ip !== undefined) updateData.static_route_nexthop = gateway_ip;
+      if (metric !== undefined) updateData.static_route_distance = metric;
+
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/routing/${route_id}`, updateData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Ruta de tráfico actualizada exitosamente',
+              route: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al actualizar ruta de tráfico: ${error}`);
+    }
+  }
+
+  // Advanced Firewall Methods
+  private async createFirewallPolicy(args: any) {
+    const {
+      name,
+      enabled = true,
+      action = 'accept',
+      protocol = 'all',
+      src_zone,
+      dst_zone,
+      src_address_group,
+      dst_address_group,
+      dst_port_group,
+      logging = false,
+      site_id = 'default'
+    } = args;
+
+    if (!name || !action) {
+      throw new Error('name y action son requeridos');
+    }
+
+    try {
+      const policyData = {
+        name,
+        enabled,
+        action,
+        protocol,
+        logging,
+        ...(src_zone && { src_zone }),
+        ...(dst_zone && { dst_zone }),
+        ...(src_address_group && { src_address_group }),
+        ...(dst_address_group && { dst_address_group }),
+        ...(dst_port_group && { dst_port_group })
+      };
+
+      const response = await getUnifiClient().post(`/proxy/network/api/s/${site_id}/rest/firewallpolicy`, policyData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: `Política de firewall '${name}' creada exitosamente`,
+              policy: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al crear política de firewall: ${error}`);
+    }
+  }
+
+  private async listFirewallZones(args: any) {
+    const { site_id = 'default' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/rest/firewallzone`);
+      const zones = response.data || [];
+
+      const zoneSummary = zones.map((zone: any) => ({
+        id: zone._id,
+        name: zone.name,
+        enabled: zone.enabled,
+        interfaces: zone.interfaces || [],
+        networks: zone.networks || []
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_zones: zoneSummary.length,
+              zones: zoneSummary,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener zonas de firewall: ${error}`);
     }
   }
 

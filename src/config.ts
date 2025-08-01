@@ -1,7 +1,9 @@
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
+import path from 'path';
 
 // Cargar variables de entorno
-dotenv.config();
+const envPath = path.join(__dirname, '..', '.env');
+dotenv.config({ path: envPath });
 
 export interface UniFiConfig {
   host: string;
@@ -13,16 +15,18 @@ export interface UniFiConfig {
   apiKey?: string;
 }
 
-export const getUniFiConfig = (): UniFiConfig => {
-  return {
-    host: process.env.UNIFI_HOST || 'localhost',
-    username: process.env.UNIFI_USERNAME || 'admin',
+export function getUniFiConfig(): UniFiConfig {
+  const config = {
+    host: process.env.UNIFI_HOST || process.env.UNIFI_ROUTER_IP || 'localhost',
+    username: process.env.UNIFI_USERNAME || '',
     password: process.env.UNIFI_PASSWORD || '',
     port: parseInt(process.env.UNIFI_PORT || '443'),
-    verifySsl: process.env.UNIFI_VERIFY_SSL?.toLowerCase() === 'true',
-    site: process.env.UNIFI_SITE || 'default',
+    verifySsl: process.env.UNIFI_VERIFY_SSL !== 'false',
+    site: process.env.UNIFI_SITE || process.env.UNIFI_DEFAULT_SITE || 'default',
     apiKey: process.env.UNIFI_API_KEY
   };
-};
+
+  return config;
+}
 
 export const config = getUniFiConfig();

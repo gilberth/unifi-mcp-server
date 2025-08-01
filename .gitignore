@@ -198,6 +198,27 @@ logs
 
 # Configuration files with sensitive data
 claude_desktop_config.json
+
+# Debug and test files
+debug_*.js
+test_*.js
+*_test.js
+quick_test.js
+diagnose_*.js
+
+# Development documentation
+DIAGNOSTICO.md
+CLAUDE_DESKTOP_SETUP.md
+README_FINAL.md
+
+# Local configuration files
+mcp_config.json
+sample_responses.json
+
+# Virtual environments
+venv/
+env/
+.venv/
 config.json
 secrets.json
 

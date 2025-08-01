@@ -66,6 +66,7 @@ export class UniFiClientAPI {
   private config: UniFiConfig;
   private isAuthenticated: boolean = false;
   private csrfToken?: string;
+  private cookies: string[] = [];
 
   constructor(config: UniFiConfig) {
     this.config = config;
@@ -80,12 +81,43 @@ export class UniFiClientAPI {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
-      }
+      },
+      withCredentials: true
     });
 
-    // Interceptor para manejar cookies
+    // Interceptor para manejar cookies y respuestas
+    this.client.interceptors.request.use((config) => {
+      if (this.cookies.length > 0) {
+        config.headers['Cookie'] = this.cookies.join('; ');
+      }
+      if (this.csrfToken) {
+        config.headers['X-CSRF-Token'] = this.csrfToken;
+      }
+      return config;
+    });
+
     this.client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // Capturar cookies de la respuesta
+        const setCookieHeader = response.headers['set-cookie'];
+        if (setCookieHeader) {
+          setCookieHeader.forEach(cookie => {
+            const cookieName = cookie.split('=')[0];
+            // Remover cookie existente con el mismo nombre
+            this.cookies = this.cookies.filter(c => !c.startsWith(cookieName + '='));
+            // Agregar nueva cookie
+            this.cookies.push(cookie.split(';')[0]);
+          });
+        }
+        
+        // Capturar CSRF token
+        const csrfToken = response.headers['x-csrf-token'];
+        if (csrfToken) {
+          this.csrfToken = csrfToken;
+        }
+        
+        return response;
+      },
       (error) => {
         console.error('UniFi API Error:', error.response?.data || error.message);
         return Promise.reject(error);
@@ -97,13 +129,16 @@ export class UniFiClientAPI {
     if (this.isAuthenticated) return;
 
     try {
-      // Intentar autenticación con UniFi OS primero
+      console.log('Intentando autenticación UniFi OS...');
       await this.authenticateUniFiOS();
+      console.log('Autenticación UniFi OS exitosa');
     } catch (error) {
       console.log('UniFi OS auth failed, trying traditional auth...');
       try {
         await this.authenticateTraditional();
+        console.log('Autenticación tradicional exitosa');
       } catch (traditionalError) {
+        console.error('Ambas autenticaciones fallaron:', error);
         throw new Error(`Authentication failed: ${error}`);
       }
     }
@@ -119,15 +154,9 @@ export class UniFiClientAPI {
 
     const response = await this.client.post('/api/auth/login', loginData);
     
-    if (response.status === 200) {
+    if (response.status === 200 && response.data) {
       this.isAuthenticated = true;
-      
-      // Extraer CSRF token si está presente
-      const csrfToken = response.headers['x-csrf-token'];
-      if (csrfToken) {
-        this.csrfToken = csrfToken;
-        this.client.defaults.headers['X-CSRF-Token'] = csrfToken;
-      }
+      console.log('UniFi OS authentication successful');
     } else {
       throw new Error('UniFi OS authentication failed');
     }
@@ -232,5 +261,15 @@ export class UniFiClientAPI {
   }
 }
 
-// Instancia global del cliente
-export const unifiClient = new UniFiClientAPI(config);
+// Instancia global del cliente con inicialización lazy
+let _unifiClient: UniFiClientAPI | null = null;
+
+export const getUnifiClient = (): UniFiClientAPI => {
+  if (!_unifiClient) {
+    _unifiClient = new UniFiClientAPI(config);
+  }
+  return _unifiClient;
+};
+
+// Mantener compatibilidad con el código existente
+export const unifiClient = getUnifiClient();

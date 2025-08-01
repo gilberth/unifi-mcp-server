@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "unifi-mcp-server": {
+      "command": "npx",
+      "args": ["@thelord/unifi-mcp-server"],
+      "env": {
+        "UNIFI_ROUTER_IP": "192.168.1.1",
+        "UNIFI_USERNAME": "admin",
+        "UNIFI_PASSWORD": "tu_contraseña_aqui",
+        "UNIFI_PORT": "443",
+        "UNIFI_VERIFY_SSL": "false",
+        "UNIFI_API_TIMEOUT": "30000"
+      }
+    }
+  }
+}

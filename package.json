@@ -1,10 +1,10 @@
 {
   "name": "unifi-mcp-server",
-  "version": "1.0.0",
-  "description": "Servidor MCP para gestión de redes UniFi con 57 herramientas",
+  "version": "1.1.0",
+  "description": "Servidor MCP para gestión avanzada de redes UniFi con QoS, VPN, Port Forwarding, Traffic Routes y Firewall",
   "main": "dist/index.js",
   "bin": {
-    "unifi-mcp-server": "./dist/index.js"
+    "unifi-mcp-server": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
@@ -25,11 +25,15 @@
     "typescript",
     "nodejs"
   ],
-  "author": "Gilberth <gilberth@gytech.com.pe>",
+  "author": {
+    "name": "Gilberth Cordova (thelord)",
+    "email": "gilberth@gytech.com.pe",
+    "url": "https://github.com/thelord"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/gilberth/unifi-mcp-server.git"
+    "url": "git+https://github.com/gilberth/unifi-mcp-server.git"
   },
   "bugs": {
     "url": "https://github.com/gilberth/unifi-mcp-server/issues"
