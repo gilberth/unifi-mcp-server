@@ -411,6 +411,20 @@ class UniFiMCPServer {
         },
         // Port Forwarding
         {
+          name: 'unifi_list_port_forwards',
+          description: 'Lista todas las reglas de port forwarding configuradas',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            }
+          }
+        },
+        {
           name: 'unifi_create_port_forward',
           description: 'Crea una nueva regla de port forwarding',
           inputSchema: {
@@ -681,6 +695,8 @@ class UniFiMCPServer {
           case 'unifi_update_vpn_client_state':
             return await this.updateVpnClientState(args);
           // Port Forwarding
+          case 'unifi_list_port_forwards':
+            return await this.listPortForwards(args);
           case 'unifi_create_port_forward':
             return await this.createPortForward(args);
           case 'unifi_toggle_port_forward':
@@ -1389,6 +1405,45 @@ class UniFiMCPServer {
   }
 
   // Port Forwarding Methods
+  private async listPortForwards(args: any) {
+    const { site_id = 'default' } = args;
+
+    try {
+      const response = await getUnifiClient().get(`/proxy/network/api/s/${site_id}/rest/portforward`);
+      const portForwards = response.data || [];
+
+      const portForwardSummary = portForwards.map((rule: any) => ({
+        id: rule._id,
+        name: rule.name,
+        enabled: rule.enabled,
+        src_port: rule.fwd_port,
+        dst_port: rule.fwd_port_to,
+        dst_ip: rule.fwd_ip,
+        protocol: rule.proto,
+        src: rule.src,
+        dst: rule.dst,
+        log: rule.log || false,
+        created: rule.date_created ? new Date(rule.date_created * 1000).toISOString() : 'N/A'
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              total_rules: portForwardSummary.length,
+              active_rules: portForwardSummary.filter((rule: any) => rule.enabled).length,
+              rules: portForwardSummary,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener reglas de port forwarding: ${error}`);
+    }
+  }
+
   private async createPortForward(args: any) {
     const {
       name,
