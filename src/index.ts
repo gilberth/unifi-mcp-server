@@ -18,7 +18,7 @@ class UniFiMCPServer {
     this.server = new Server(
       {
         name: 'unifi-mcp-server',
-        version: '1.0.0',
+        version: '1.1.0',
       },
       {
         capabilities: {
