@@ -493,6 +493,53 @@ class UniFiMCPServer {
             required: ['rule_id', 'enabled']
           }
         },
+        {
+          name: 'unifi_update_port_forward',
+          description: 'Actualiza una regla de port forwarding existente',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              rule_id: {
+                type: 'string',
+                description: 'ID de la regla de port forwarding'
+              },
+              name: {
+                type: 'string',
+                description: 'Nuevo nombre de la regla'
+              },
+              enabled: {
+                type: 'boolean',
+                description: 'Estado de la regla'
+              },
+              src_port: {
+                type: 'string',
+                description: 'Nuevo puerto origen (externo)'
+              },
+              dst_port: {
+                type: 'string',
+                description: 'Nuevo puerto destino (interno)'
+              },
+              dst_ip: {
+                type: 'string',
+                description: 'Nueva IP destino interna'
+              },
+              protocol: {
+                type: 'string',
+                description: 'Protocolo (tcp, udp, tcp_udp)'
+              },
+              log: {
+                type: 'boolean',
+                description: 'Habilitar/deshabilitar logging'
+              },
+              site_id: {
+                type: 'string',
+                description: 'ID del sitio',
+                default: 'default'
+              }
+            },
+            required: ['rule_id']
+          }
+        },
         // Logs and Events
         {
           name: 'unifi_get_events',
@@ -737,6 +784,8 @@ class UniFiMCPServer {
             return await this.createPortForward(args);
           case 'unifi_toggle_port_forward':
             return await this.togglePortForward(args);
+          case 'unifi_update_port_forward':
+            return await this.updatePortForward(args);
           // Logs and Events
           case 'unifi_get_events':
             return await this.getEvents(args);
@@ -1551,6 +1600,55 @@ class UniFiMCPServer {
               success: true,
               message: `Regla de port forwarding ${enabled ? 'habilitada' : 'deshabilitada'} exitosamente`,
               rule: response.data,
+              site: site_id
+            }, null, 2)
+          }
+        ]
+      };
+    } catch (error) {
+      throw new Error(`Error al actualizar regla de port forwarding: ${error}`);
+    }
+  }
+
+  private async updatePortForward(args: any) {
+    const { 
+      rule_id, 
+      name, 
+      enabled, 
+      src_port, 
+      dst_port, 
+      dst_ip, 
+      protocol, 
+      log, 
+      site_id = 'default' 
+    } = args;
+
+    if (!rule_id) {
+      throw new Error('rule_id es requerido');
+    }
+
+    try {
+      // Construir objeto de actualización solo con los campos proporcionados
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (enabled !== undefined) updateData.enabled = enabled;
+      if (src_port !== undefined) updateData.src = src_port;
+      if (dst_port !== undefined) updateData.dst_port = dst_port;
+      if (dst_ip !== undefined) updateData.fwd = dst_ip;
+      if (protocol !== undefined) updateData.proto = protocol;
+      if (log !== undefined) updateData.log = log;
+
+      const response = await getUnifiClient().put(`/proxy/network/api/s/${site_id}/rest/portforward/${rule_id}`, updateData);
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: true,
+              message: 'Regla de port forwarding actualizada exitosamente',
+              rule: response.data,
+              updated_fields: Object.keys(updateData),
               site: site_id
             }, null, 2)
           }
