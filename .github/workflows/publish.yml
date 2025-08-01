@@ -36,13 +36,31 @@ jobs:
       run: npm run build
       
     - name: Run tests (if available)
-      run: npm test --if-present
+      run: npm test
       
     - name: Validate MCP server
       run: |
-        # Verificar que el servidor se puede inicializar
-        timeout 10s node dist/index.js || true
-        echo "MCP server validation completed"
+        echo "🔍 Validating MCP server..."
+        # Verificar que el archivo principal existe
+        if [ -f "dist/index.js" ]; then
+          echo "✅ Main file exists: dist/index.js"
+        else
+          echo "❌ Main file not found: dist/index.js"
+          exit 1
+        fi
+        
+        # Verificar que el servidor se puede importar sin errores
+        node -e "
+          try {
+            require('./dist/index.js');
+            console.log('✅ MCP server can be imported successfully');
+          } catch (error) {
+            console.error('❌ MCP server import failed:', error.message);
+            process.exit(1);
+          }
+        "
+        
+        echo "✅ MCP server validation completed successfully"
 
   publish:
     needs: test
@@ -90,12 +108,12 @@ jobs:
         
     - name: Create GitHub Release
       if: steps.version-check.outputs.version_exists == 'false'
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ steps.version-check.outputs.current_version }}
-        release_name: Release v${{ steps.version-check.outputs.current_version }}
+        name: Release v${{ steps.version-check.outputs.current_version }}
         body: |
           ## UniFi MCP Server v${{ steps.version-check.outputs.current_version }}
           
