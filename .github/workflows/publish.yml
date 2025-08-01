@@ -101,14 +101,34 @@ jobs:
           echo "Version $CURRENT_VERSION is new, will publish"
         fi
         
+    - name: Check NPM Token availability
+      id: npm-token-check
+      run: |
+        if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+          echo "npm_token_available=false" >> $GITHUB_OUTPUT
+          echo "⚠️ NPM_TOKEN not configured - skipping publication"
+        else
+          echo "npm_token_available=true" >> $GITHUB_OUTPUT
+          echo "✅ NPM_TOKEN available - publication enabled"
+        fi
+        
     - name: Publish to npm
-      if: steps.version-check.outputs.version_exists == 'false'
+      if: steps.version-check.outputs.version_exists == 'false' && steps.npm-token-check.outputs.npm_token_available == 'true'
       run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         
+    - name: Skip publish (no NPM token)
+      if: steps.version-check.outputs.version_exists == 'false' && steps.npm-token-check.outputs.npm_token_available == 'false'
+      run: |
+        echo "⚠️ NPM publication skipped - NPM_TOKEN not configured"
+        echo "💡 To enable automatic publication:"
+        echo "   1. Generate an NPM token at https://www.npmjs.com/settings/tokens"
+        echo "   2. Add it as NPM_TOKEN secret in GitHub repository settings"
+        echo "   3. Re-run the workflow or push a new commit"
+        
     - name: Create GitHub Release
-      if: steps.version-check.outputs.version_exists == 'false'
+      if: steps.version-check.outputs.version_exists == 'false' && steps.npm-token-check.outputs.npm_token_available == 'true'
       uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -149,3 +169,9 @@ jobs:
         echo "⚠️ Version ${{ steps.version-check.outputs.current_version }} already exists in npm"
         echo "💡 To publish a new version, update the version in package.json"
         echo "   Example: npm version patch|minor|major"
+        
+    - name: Skip GitHub Release (no NPM token)
+      if: steps.version-check.outputs.version_exists == 'false' && steps.npm-token-check.outputs.npm_token_available == 'false'
+      run: |
+        echo "⚠️ GitHub Release skipped - NPM_TOKEN not configured"
+        echo "💡 GitHub Release will be created automatically when NPM publication succeeds"
