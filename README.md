@@ -6,6 +6,13 @@
 
 Un servidor MCP (Model Context Protocol) para interactuar con controladores UniFi locales. Este servidor permite a Claude Desktop y otros clientes MCP consultar información de dispositivos, clientes, estado de salud y configuraciones de red de tu infraestructura UniFi.
 
+## 📊 Estado del Proyecto
+
+- ✅ **CI/CD**: GitHub Actions completamente funcional
+- ✅ **Tests**: Validación en Node.js 18.x y 20.x
+- ✅ **NPM**: Listo para publicación automática
+- 🔄 **Última actualización**: Enero 2025 - Workflow optimizado
+
 ## 🚀 Características
 
 - **Gestión de Dispositivos**: Lista y monitorea todos los dispositivos UniFi (Access Points, Switches, Gateways)
